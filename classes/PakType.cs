@@ -1,3 +1,3 @@
 namespace UnrealRepacker;
 
-public enum PakNetworkType { None, Client, Server }
+public enum PakType { None, WindowsClient, WindowsServer, LinuxServer }

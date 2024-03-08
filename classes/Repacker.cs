@@ -9,8 +9,15 @@ public class Repacker(Config config)
     public List<ModInfo> Mods { get; } = [];
     public ModInfo MainMod { get; set; }
 
-    public List<PakInfo> Paks { get; } = [];
-
+    private readonly List<PakInfo> allPaks = [];
+    public IEnumerable<PakInfo> Paks
+    {
+        get
+        {
+            var pakTypes = MainMod.paks.Select(x => x.PakType);
+            return allPaks.Where(x => pakTypes.Contains(x.PakType));
+        }
+    }
 
     public void AddPak(PakInfo pak)
     {
@@ -23,14 +30,19 @@ public class Repacker(Config config)
         }
 
         mod.paks.Add(pak);
-        Paks.Add(pak);
+        allPaks.Add(pak);
 
         MainMod ??= mod;
     }
 
     public IEnumerable<string> GetMainModImports()
     {
-        string searchRoot = Path.Combine(config.ExtractDirectory, PakNetworkType.Server.ToString());
+        // if server pak is not found, use client
+        var mainPak = MainMod.paks.FirstOrDefault(p => p.PakType == PakType.WindowsServer);
+        mainPak ??= MainMod.paks.FirstOrDefault(p => p.PakType == PakType.LinuxServer);
+        mainPak ??= MainMod.paks.First(p => p.PakType == PakType.WindowsClient);
+
+        string searchRoot = Path.Combine(config.ExtractDirectory, mainPak.PakType.ToString());
         string searchPath = Path.Combine(searchRoot, MainMod.modName);
 
         return Directory
@@ -51,7 +63,7 @@ public class Repacker(Config config)
 
     private void Pack(IEnumerable<string> imports, PakInfo targetPak, string newModName)
     {
-        var directory = Path.Combine(config.ExtractDirectory, targetPak.NetworkType.ToString());
+        var directory = Path.Combine(config.ExtractDirectory, targetPak.PakType.ToString());
         var uassetDependencies = AssetHelper.SearchDependencies(imports, directory);
 
         // copy files from extract directory to temp directory
@@ -80,7 +92,7 @@ public class Repacker(Config config)
 
             // get new abs path
             var newPathRelative = string.Join(Path.DirectorySeparatorChar, parts);
-            string destUasset = Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), newPathRelative);
+            string destUasset = Path.Combine(config.TempDirectory, targetPak.PakType.ToString(), newPathRelative);
 
             // change imports and save
             var additionalMods = Mods.Where(m => m != MainMod).Select(m => m.modName).ToArray();
@@ -94,17 +106,17 @@ public class Repacker(Config config)
     {
         // create dummy AssetRegistry.bin in temp directory
         string assetRegistryPath = Path.Combine(config.TempDirectory,
-                                                targetPak.NetworkType.ToString(),
+                                                targetPak.PakType.ToString(),
                                                 "AssetRegistry.bin");
         File.Create(assetRegistryPath).Close();
 
         // create ResponseFile
         string responseFilePath = Path.Combine(config.TempDirectory, "ResponseFile.txt");
-        string responseFileContent = $"\"{Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), "*.*")}\" \"../../../Mordhau/Mods/{newModName}/*.*\" -compress";
+        string responseFileContent = $"\"{Path.Combine(config.TempDirectory, targetPak.PakType.ToString(), "*.*")}\" \"../../../Mordhau/Mods/{newModName}/*.*\" -compress";
         File.WriteAllText(responseFilePath, responseFileContent);
 
         // build command for execution
-        var pakName = newModName + targetPak.PakOsType.ToString() + targetPak.NetworkType.ToString() + ".pak";
+        var pakName = newModName + targetPak.PakType.ToString() + ".pak";
         var pakPath = Path.Combine(config.PackedDirectory, newModName, pakName);
 
         string command = $"\"{config.UnrealPak}\" \"{pakPath}\" \"-Create={responseFilePath}\"";
@@ -149,7 +161,7 @@ public class Repacker(Config config)
 
         foreach (var pakInfo in Paks)
         {
-            string extractPath = Path.Combine(config.ExtractDirectory, pakInfo.NetworkType.ToString(), pakInfo.ModName);
+            string extractPath = Path.Combine(config.ExtractDirectory, pakInfo.PakType.ToString(), pakInfo.ModName);
             Directory.CreateDirectory(extractPath);
 
             string command = $"\"{config.UnrealPak}\" \"{pakInfo.Path}\" -Extract \"{extractPath}\"";
@@ -165,7 +177,7 @@ public class Repacker(Config config)
             SafeRemoveDirectory(dir);
         }
 
-        Paks.Clear();
+        allPaks.Clear();
         Mods.Clear();
         MainMod = null;
     }

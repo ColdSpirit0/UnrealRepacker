@@ -81,7 +81,7 @@ public partial class Form1 : Form
             TreeNode modNode = new TreeNode(mod.modName);
             foreach (var pak in mod.paks)
             {
-                modNode.Nodes.Add(new TreeNode($"{pak.PakName}, {pak.NetworkType}, {pak.PakOsType}"));
+                modNode.Nodes.Add(new TreeNode($"{pak.PakName}, {pak.PakType}"));
             }
             treeView1.Nodes.Add(modNode);
         }
@@ -117,7 +117,7 @@ public partial class Form1 : Form
     private void OnExtractPaksButtonClick(object sender, EventArgs e)
     {
         // validate paks are selected
-        if (repacker.Paks.Count == 0)
+        if (!repacker.Paks.Any())
         {
             MessageBox.Show("No paks were added", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
