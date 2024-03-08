@@ -30,6 +30,15 @@ public partial class Form1 : Form
         {
             MessageBox.Show("config.cfg not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Application.Exit();
+            return;
+        }
+
+        // validate unreal pak tool is exists
+        if (!File.Exists(config.UnrealPak))
+        {
+            MessageBox.Show("UnrealPak.exe not found, check path in config", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Application.Exit();
+            return;
         }
     }
 
