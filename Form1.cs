@@ -8,14 +8,13 @@ namespace UnrealRepacker;
 public partial class Form1 : Form
 {
     Config config;
-    // PakTool pakTool;
     Repacker repacker;
+
 
     public Form1()
     {
         InitializeComponent();
         config = new Config(Directory.GetCurrentDirectory());
-        // pakTool = new PakTool(config);
         repacker = new Repacker(config);
     }
 
@@ -61,8 +60,7 @@ public partial class Form1 : Form
             comboBox1.Items.Add(mod);
         }
 
-        comboBox1.SelectedItem = repacker.MainMod;
-        newModNameTextBox.Text = repacker.MainMod!.modName;
+        comboBox1.SelectedItem ??= repacker.MainMod;
     }
 
     private void UpdatePaksList()
@@ -87,24 +85,48 @@ public partial class Form1 : Form
         // validate uassets are selected
         if (uassetsListBox.SelectedItems.Count == 0)
         {
-            MessageBox.Show("No uassets are selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("No uassets are selected, select uassets you want to pack.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        // validate mod name is not empty
+        if (string.IsNullOrEmpty(newModNameTextBox.Text))
+        {
+            MessageBox.Show("Mod name is empty, provide a valid name.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
         repacker.Pack(uassetsListBox.SelectedItems.Cast<string>(), newModNameTextBox.Text);
-
-        // foreach (var modInfo in modInfos)
-        // {
-        //     pakTool.PackUassetFiles(uassetsListBox.SelectedItems.Cast<string>(), modInfo, removeMetadataCheckBox.Checked);
-        // }
     }
 
     private void OnExtractPaksButtonClick(object sender, EventArgs e)
     {
+        // validate paks are selected
+        if (repacker.Paks.Count == 0)
+        {
+            MessageBox.Show("No paks were added", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        // extract and add imports to listbox
         repacker.ExtractAllPaks();
         foreach (var import in repacker.GetMainModImports())
         {
             uassetsListBox.Items.Add(import);
+        }
+    }
+
+    private void OnMainModSelecedItemhanged(object sender, EventArgs e)
+    {
+        repacker.MainMod = (ModInfo)comboBox1.SelectedItem;
+        newModNameTextBox.Text = repacker.MainMod.modName;
+
+        // highlight selected mod
+        foreach (TreeNode modNode in treeView1.Nodes)
+        {
+            modNode.BackColor = modNode.Text == repacker.MainMod.modName
+                                ? Color.LightBlue
+                                : treeView1.BackColor;
         }
     }
 }

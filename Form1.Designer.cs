@@ -37,11 +37,11 @@
             extractPaksButton = new Button();
             tabControl1 = new TabControl();
             addPaksTab = new TabPage();
-            assetsTab = new TabPage();
-            label4 = new Label();
             comboBox1 = new ComboBox();
-            label3 = new Label();
+            label4 = new Label();
+            assetsTab = new TabPage();
             newModNameTextBox = new TextBox();
+            label3 = new Label();
             tabControl1.SuspendLayout();
             addPaksTab.SuspendLayout();
             assetsTab.SuspendLayout();
@@ -72,9 +72,9 @@
             label2.AutoSize = true;
             label2.Location = new Point(6, 3);
             label2.Name = "label2";
-            label2.Size = new Size(104, 15);
+            label2.Size = new Size(314, 15);
             label2.TabIndex = 3;
-            label2.Text = "Select files to pack";
+            label2.Text = "Select files to pack, use ctrl or shift to select multiple items";
             // 
             // uassetsListBox
             // 
@@ -83,7 +83,7 @@
             uassetsListBox.ItemHeight = 15;
             uassetsListBox.Location = new Point(6, 21);
             uassetsListBox.Name = "uassetsListBox";
-            uassetsListBox.SelectionMode = SelectionMode.MultiSimple;
+            uassetsListBox.SelectionMode = SelectionMode.MultiExtended;
             uassetsListBox.Size = new Size(837, 484);
             uassetsListBox.TabIndex = 6;
             // 
@@ -143,6 +143,25 @@
             addPaksTab.Text = "Add Paks";
             addPaksTab.UseVisualStyleBackColor = true;
             // 
+            // comboBox1
+            // 
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(845, 88);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(186, 23);
+            comboBox1.TabIndex = 11;
+            comboBox1.SelectedIndexChanged += OnMainModSelecedItemhanged;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(845, 70);
+            label4.Name = "label4";
+            label4.Size = new Size(62, 15);
+            label4.TabIndex = 10;
+            label4.Text = "Main mod";
+            // 
             // assetsTab
             // 
             assetsTab.Controls.Add(newModNameTextBox);
@@ -159,22 +178,12 @@
             assetsTab.Text = "Repack";
             assetsTab.UseVisualStyleBackColor = true;
             // 
-            // label4
+            // newModNameTextBox
             // 
-            label4.AutoSize = true;
-            label4.Location = new Point(845, 70);
-            label4.Name = "label4";
-            label4.Size = new Size(62, 15);
-            label4.TabIndex = 10;
-            label4.Text = "Main mod";
-            // 
-            // comboBox1
-            // 
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(845, 88);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(186, 23);
-            comboBox1.TabIndex = 11;
+            newModNameTextBox.Location = new Point(849, 453);
+            newModNameTextBox.Name = "newModNameTextBox";
+            newModNameTextBox.Size = new Size(182, 23);
+            newModNameTextBox.TabIndex = 12;
             // 
             // label3
             // 
@@ -184,13 +193,6 @@
             label3.Size = new Size(92, 15);
             label3.TabIndex = 11;
             label3.Text = "New mod name";
-            // 
-            // newModNameTextBox
-            // 
-            newModNameTextBox.Location = new Point(849, 453);
-            newModNameTextBox.Name = "newModNameTextBox";
-            newModNameTextBox.Size = new Size(182, 23);
-            newModNameTextBox.TabIndex = 12;
             // 
             // Form1
             // 
