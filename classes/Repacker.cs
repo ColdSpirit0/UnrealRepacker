@@ -36,7 +36,7 @@ public class Repacker(Config config)
     public IEnumerable<string> GetMainModImports()
     {
         string searchRoot = Path.Combine(config.ExtractDirectory, PakNetworkType.Server.ToString());
-        string searchPath = Path.Combine(searchRoot, MainMod!.modName);
+        string searchPath = Path.Combine(searchRoot, MainMod.modName);
 
         return Directory
             .EnumerateFiles(searchPath, "*.uasset", SearchOption.AllDirectories)
@@ -52,7 +52,7 @@ public class Repacker(Config config)
             Directory.Delete(config.TempDirectory, true);
         }
 
-        foreach (var pak in MainMod!.paks)
+        foreach (var pak in MainMod.paks)
         {
             Pack(imports, pak, newModName);
         }
@@ -80,7 +80,7 @@ public class Repacker(Config config)
             // if dependency mod is not the main mod
             // change <path>
             // to     __IMPORTS__/<modname>/<path>
-            if (dependencyModName != MainMod!.modName)
+            if (dependencyModName != MainMod.modName)
             {
                 parts.InsertRange(0, ["__IMPORTS__", dependencyModName]);
             }
@@ -94,7 +94,7 @@ public class Repacker(Config config)
 
             // change imports and save
             var additionalMods = Mods.Where(m => m != MainMod).Select(m => m.modName).ToArray();
-            AssetHelper.ChangeImportsAndSave(sourceUasset, destUasset, MainMod!.modName, additionalMods, newModName);
+            AssetHelper.ChangeImportsAndSave(sourceUasset, destUasset, MainMod.modName, additionalMods, newModName);
         }
 
         CreatePak(targetPak, newModName);
