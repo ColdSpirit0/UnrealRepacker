@@ -1,8 +1,5 @@
 using UAssetAPI;
-
 using UAssetAPI.UnrealTypes;
-using System.Linq;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace UnrealRepacker;

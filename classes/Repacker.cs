@@ -1,8 +1,4 @@
 using System.Diagnostics;
-using System.Net.Security;
-using System.Text.RegularExpressions;
-using UAssetAPI;
-using UAssetAPI.UnrealTypes.EngineEnums;
 
 namespace UnrealRepacker;
 
@@ -10,9 +6,8 @@ public class Repacker(Config config)
 {
     private Config config = config;
 
-
     public List<ModInfo> Mods { get; } = [];
-    public ModInfo? MainMod { get; set; }
+    public ModInfo MainMod { get; set; }
 
     public List<PakInfo> Paks { get; } = [];
 
@@ -62,7 +57,6 @@ public class Repacker(Config config)
     {
         var directory = Path.Combine(config.ExtractDirectory, targetPak.NetworkType.ToString());
         var uassetDependencies = AssetHelper.SearchDependencies(imports, directory);
-        // var filesToPack = GetFilesToPack(targetPak, uassetDependencies);
 
         // copy files from extract directory to temp directory
         foreach (var sourceUasset in uassetDependencies)
@@ -112,43 +106,20 @@ public class Repacker(Config config)
         File.WriteAllText(responseFilePath, responseFileContent);
 
         // build command for execution
-        // var pakPath = Path.Combine(config.PackedDirectory, targetPak.pakName) + ".pak";
-        // FIXME: use better pak path
-        var pakPath = Path.Combine(config.PackedDirectory, newModName + "Windows" + targetPak.NetworkType.ToString()) + ".pak";
+        var pakName = newModName + targetPak.PakOsType.ToString() + targetPak.NetworkType.ToString() + ".pak";
+        var pakPath = Path.Combine(config.PackedDirectory, newModName, pakName);
+
         string command = $"\"{config.UnrealPak}\" \"{pakPath}\" \"-Create={responseFilePath}\"";
 
         // run process and wait for it to complete
         var process = Process.Start(command);
         process.WaitForExit();
     }
-
-    private IEnumerable<string> GetFilesToPack(PakInfo pakInfo, IEnumerable<string> uassetDependencies)
-    {
-        // XXX: possibly add AssetRegistry.bin and Metadata/
-
-        foreach (string dependency in uassetDependencies)
-        {
-            if (!File.Exists(dependency))
-            {
-                Debug.WriteLine($"Dependency file not found: \"{dependency}\"");
-                continue;
-            }
-
-            foreach (var ext in new[] { ".uasset", ".uexp", ".ubulk" })
-            {
-                var currentExtDependency = Path.ChangeExtension(dependency, ext);
-                if (File.Exists(currentExtDependency))
-                {
-                    yield return currentExtDependency;
-                }
-            }
-        }
-    }
+    
 
     public IEnumerable<PakInfo> SearchPaksForSameMod(string pathToPak)
     {
-        string? dir = Path.GetDirectoryName(pathToPak);
-        if (dir == null) throw new Exception("Directory not found");
+        string dir = Path.GetDirectoryName(pathToPak);
 
         PakInfo targetPak = new PakInfo(pathToPak);
         List<PakInfo> foundPaks = [targetPak];
@@ -172,6 +143,7 @@ public class Repacker(Config config)
 
         return foundPaks;
     }
+
 
     public void ExtractAllPaks()
     {

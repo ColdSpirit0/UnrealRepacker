@@ -97,6 +97,12 @@ public partial class Form1 : Form
         }
 
         repacker.Pack(uassetsListBox.SelectedItems.Cast<string>(), newModNameTextBox.Text);
+
+        // open directory with packed files
+        if (openDirectoryCheckBox.Checked)
+        {
+            Process.Start("explorer.exe", Path.Combine(config.PackedDirectory, newModNameTextBox.Text));
+        }
     }
 
     private void OnExtractPaksButtonClick(object sender, EventArgs e)

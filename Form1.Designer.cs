@@ -42,6 +42,7 @@
             assetsTab = new TabPage();
             newModNameTextBox = new TextBox();
             label3 = new Label();
+            openDirectoryCheckBox = new CheckBox();
             tabControl1.SuspendLayout();
             addPaksTab.SuspendLayout();
             assetsTab.SuspendLayout();
@@ -164,6 +165,7 @@
             // 
             // assetsTab
             // 
+            assetsTab.Controls.Add(openDirectoryCheckBox);
             assetsTab.Controls.Add(newModNameTextBox);
             assetsTab.Controls.Add(label3);
             assetsTab.Controls.Add(label2);
@@ -180,7 +182,7 @@
             // 
             // newModNameTextBox
             // 
-            newModNameTextBox.Location = new Point(849, 453);
+            newModNameTextBox.Location = new Point(849, 407);
             newModNameTextBox.Name = "newModNameTextBox";
             newModNameTextBox.Size = new Size(182, 23);
             newModNameTextBox.TabIndex = 12;
@@ -188,11 +190,23 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(849, 435);
+            label3.Location = new Point(849, 389);
             label3.Name = "label3";
             label3.Size = new Size(92, 15);
             label3.TabIndex = 11;
             label3.Text = "New mod name";
+            // 
+            // openDirectoryCheckBox
+            // 
+            openDirectoryCheckBox.AutoSize = true;
+            openDirectoryCheckBox.Checked = true;
+            openDirectoryCheckBox.CheckState = CheckState.Checked;
+            openDirectoryCheckBox.Location = new Point(849, 436);
+            openDirectoryCheckBox.Name = "openDirectoryCheckBox";
+            openDirectoryCheckBox.Size = new Size(181, 19);
+            openDirectoryCheckBox.TabIndex = 13;
+            openDirectoryCheckBox.Text = "Open paks directory on finish";
+            openDirectoryCheckBox.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -227,5 +241,6 @@
         private TabPage assetsTab;
         private ComboBox comboBox1;
         private Label label4;
+        private CheckBox openDirectoryCheckBox;
     }
 }
