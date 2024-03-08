@@ -135,6 +135,15 @@ public partial class Form1 : Form
                                 : treeView1.BackColor;
         }
     }
+
+    private void OnResetChangesClick(object sender, EventArgs e)
+    {
+        repacker.Clean();
+        uassetsListBox.Items.Clear();
+        treeView1.Nodes.Clear();
+        newModNameTextBox.Text = "";
+        comboBox1.Items.Clear();
+    }
 }
 
 

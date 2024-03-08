@@ -40,9 +40,10 @@
             comboBox1 = new ComboBox();
             label4 = new Label();
             assetsTab = new TabPage();
+            openDirectoryCheckBox = new CheckBox();
             newModNameTextBox = new TextBox();
             label3 = new Label();
-            openDirectoryCheckBox = new CheckBox();
+            cleanButton = new Button();
             tabControl1.SuspendLayout();
             addPaksTab.SuspendLayout();
             assetsTab.SuspendLayout();
@@ -131,6 +132,7 @@
             // 
             // addPaksTab
             // 
+            addPaksTab.Controls.Add(cleanButton);
             addPaksTab.Controls.Add(comboBox1);
             addPaksTab.Controls.Add(label4);
             addPaksTab.Controls.Add(label1);
@@ -180,6 +182,18 @@
             assetsTab.Text = "Repack";
             assetsTab.UseVisualStyleBackColor = true;
             // 
+            // openDirectoryCheckBox
+            // 
+            openDirectoryCheckBox.AutoSize = true;
+            openDirectoryCheckBox.Checked = true;
+            openDirectoryCheckBox.CheckState = CheckState.Checked;
+            openDirectoryCheckBox.Location = new Point(849, 436);
+            openDirectoryCheckBox.Name = "openDirectoryCheckBox";
+            openDirectoryCheckBox.Size = new Size(181, 19);
+            openDirectoryCheckBox.TabIndex = 13;
+            openDirectoryCheckBox.Text = "Open paks directory on finish";
+            openDirectoryCheckBox.UseVisualStyleBackColor = true;
+            // 
             // newModNameTextBox
             // 
             newModNameTextBox.Location = new Point(849, 407);
@@ -196,17 +210,15 @@
             label3.TabIndex = 11;
             label3.Text = "New mod name";
             // 
-            // openDirectoryCheckBox
+            // cleanButton
             // 
-            openDirectoryCheckBox.AutoSize = true;
-            openDirectoryCheckBox.Checked = true;
-            openDirectoryCheckBox.CheckState = CheckState.Checked;
-            openDirectoryCheckBox.Location = new Point(849, 436);
-            openDirectoryCheckBox.Name = "openDirectoryCheckBox";
-            openDirectoryCheckBox.Size = new Size(181, 19);
-            openDirectoryCheckBox.TabIndex = 13;
-            openDirectoryCheckBox.Text = "Open paks directory on finish";
-            openDirectoryCheckBox.UseVisualStyleBackColor = true;
+            cleanButton.Location = new Point(845, 483);
+            cleanButton.Name = "cleanButton";
+            cleanButton.Size = new Size(186, 23);
+            cleanButton.TabIndex = 12;
+            cleanButton.Text = "Reset changes";
+            cleanButton.UseVisualStyleBackColor = true;
+            cleanButton.Click += OnResetChangesClick;
             // 
             // Form1
             // 
@@ -242,5 +254,6 @@
         private ComboBox comboBox1;
         private Label label4;
         private CheckBox openDirectoryCheckBox;
+        private Button cleanButton;
     }
 }

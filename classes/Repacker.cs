@@ -41,11 +41,7 @@ public class Repacker(Config config)
 
     public void Pack(IEnumerable<string> imports, string newModName)
     {
-        // clean temp directory
-        if (Directory.Exists(config.TempDirectory))
-        {
-            Directory.Delete(config.TempDirectory, true);
-        }
+        SafeRemoveDirectory(config.TempDirectory);
 
         foreach (var pak in MainMod.paks)
         {
@@ -97,10 +93,12 @@ public class Repacker(Config config)
     private void CreatePak(PakInfo targetPak, string newModName)
     {
         // create dummy AssetRegistry.bin in temp directory
-        File.Create(Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), "AssetRegistry.bin"));
+        string assetRegistryPath = Path.Combine(config.TempDirectory,
+                                                targetPak.NetworkType.ToString(),
+                                                "AssetRegistry.bin");
+        File.Create(assetRegistryPath).Close();
 
         // create ResponseFile
-        // TODO: check for packing without asset registry, just from Content/*
         string responseFilePath = Path.Combine(config.TempDirectory, "ResponseFile.txt");
         string responseFileContent = $"\"{Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), "*.*")}\" \"../../../Mordhau/Mods/{newModName}/*.*\" -compress";
         File.WriteAllText(responseFilePath, responseFileContent);
@@ -115,7 +113,7 @@ public class Repacker(Config config)
         var process = Process.Start(command);
         process.WaitForExit();
     }
-    
+
 
     public IEnumerable<PakInfo> SearchPaksForSameMod(string pathToPak)
     {
@@ -147,13 +145,8 @@ public class Repacker(Config config)
 
     public void ExtractAllPaks()
     {
-        // clean extract directory and unpack all paks
-        if (Directory.Exists(config.ExtractDirectory))
-        {
-            Directory.Delete(config.ExtractDirectory, true);
-        }
+        SafeRemoveDirectory(config.ExtractDirectory);
 
-        // extract
         foreach (var pakInfo in Paks)
         {
             string extractPath = Path.Combine(config.ExtractDirectory, pakInfo.NetworkType.ToString(), pakInfo.ModName);
@@ -167,9 +160,21 @@ public class Repacker(Config config)
 
     public void Clean()
     {
-        throw new NotImplementedException();
-        // remove extracted paks, clean Paks
-        // Directory.Delete(config.ExtractDirectory, true);
-        // Paks.Clear();
+        foreach (var dir in new [] { config.TempDirectory, config.ExtractDirectory })
+        {
+            SafeRemoveDirectory(dir);
+        }
+
+        Paks.Clear();
+        Mods.Clear();
+        MainMod = null;
+    }
+
+    private static void SafeRemoveDirectory(string dir)
+    {
+        if (Directory.Exists(dir))
+        {
+            Directory.Delete(dir, true);
+        }
     }
 }
