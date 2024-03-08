@@ -9,30 +9,37 @@ namespace UnrealRepacker;
 
 public static class AssetHelper
 {
+    /// <summary>
+    /// returns absolute path
+    /// </summary>
     public static string ImportToPath(string pakDirectory, string import)
     {
-        // split by /
-        // insert Content after mod name
-        // insert base directory
-        // append extension
+        return Path.Combine(pakDirectory, ImportToPath(import));
+    }
 
+    /// <summary>
+    /// returns relative path
+    /// </summary>
+    public static string ImportToPath(string import)
+    {
         var importParts = import.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
         importParts.Insert(1, "Content");
-        importParts.Insert(0, pakDirectory);
 
         return Path.Combine(importParts.ToArray()) + ".uasset";
     }
 
     public static string PathToImport(string pakDirectory, string path)
     {
-        // get relative path
+        string relativePath = Path.GetRelativePath(pakDirectory, path);
+        return PathToImport(relativePath);
+    }
+
+    public static string PathToImport(string relativePath)
+    {
         // remove extension
         // remove Content part
         // replace / with \
-
-        string relativePath = Path.GetRelativePath(pakDirectory, path);
         relativePath = Path.ChangeExtension(relativePath, null);
-
         var splitted = relativePath.Split(Path.DirectorySeparatorChar).ToList();
         splitted.RemoveAt(1);
         return string.Join("/", splitted);
@@ -68,20 +75,20 @@ public static class AssetHelper
         return totalDependencyPaths;
     }
 
-    public static void ChangeImports(string srcUassetPath, string dstUassetPath, string mainPackage, string[] additionalPackages, string newPackageName)
+    public static void ChangeImportsAndSave(string srcUassetPath, string dstUassetPath, string mainPackage, string[] additionalPackages, string newPackageName)
     {
-        // string pattern = $@"/"
         UAsset uasset = new(srcUassetPath, EngineVersion.VER_UE4_26);
-        List<Import> newImports = new();
         var names = uasset.GetNameMapIndexList();
         foreach (var name in names)
         {
+            // replace mod name if the main package
             if (name.Value.StartsWith($"/{mainPackage}/"))
             {
                 name.Value = Regex.Replace(name.Value, $"^/{mainPackage}/", $"/{newPackageName}/");
                 continue;
             }
 
+            // put additional packages in __imports__
             foreach (var additionalPackage in additionalPackages)
             {
                 if (name.Value.StartsWith($"/{additionalPackage}/"))
@@ -90,6 +97,7 @@ public static class AssetHelper
                 }
             }
         }
+        Directory.CreateDirectory(Path.GetDirectoryName(dstUassetPath));
         uasset.Write(dstUassetPath);
     }
 

@@ -1,37 +1,50 @@
 using System.Diagnostics;
+using System.Net.Security;
 using System.Text.RegularExpressions;
 using UAssetAPI;
+using UAssetAPI.UnrealTypes.EngineEnums;
 
 namespace UnrealRepacker;
 
-public class Repacker(Config config) : IRepacker
+public class Repacker(Config config)
 {
-    private List<PakInfo> paks = [];
-    public IEnumerable<PakInfo> Paks { get => paks; }
-
     private Config config = config;
 
-    public void AddPak(PakInfo pak) => paks.Add(pak);
 
-    public PakInfo[] GetMainModPaks()
+    public List<ModInfo> Mods { get; } = [];
+    public ModInfo? MainMod { get; set; }
+
+    public List<PakInfo> Paks { get; } = [];
+
+
+    public void AddPak(PakInfo pak)
     {
-        // currently main mod is the first added
-        var firstPak = Paks.First();
+        var mod = Mods.FirstOrDefault(m => m.modName == pak.ModName);
 
-        // search paks with same mod name
-        return Paks.Where(pak => pak.modName == firstPak.modName).ToArray();
+        if (mod == null)
+        {
+            mod = new ModInfo(pak.ModName);
+            Mods.Add(mod);
+        }
+
+        mod.paks.Add(pak);
+        Paks.Add(pak);
+
+        MainMod ??= mod;
     }
 
-    public IEnumerable<string> GetImports()
+    public IEnumerable<string> GetMainModImports()
     {
-        string searchPath = Path.Combine(config.ExtractDirectory, PakNetworkType.Server.ToString());
+        string searchRoot = Path.Combine(config.ExtractDirectory, PakNetworkType.Server.ToString());
+        string searchPath = Path.Combine(searchRoot, MainMod!.modName);
 
         return Directory
             .EnumerateFiles(searchPath, "*.uasset", SearchOption.AllDirectories)
-            .Select(p => AssetHelper.PathToImport(searchPath, p));
+            .Select(p => AssetHelper.PathToImport(searchRoot, p));
     }
 
-    public void Pack(IEnumerable<string> imports)
+
+    public void Pack(IEnumerable<string> imports, string newModName)
     {
         // clean temp directory
         if (Directory.Exists(config.TempDirectory))
@@ -39,55 +52,69 @@ public class Repacker(Config config) : IRepacker
             Directory.Delete(config.TempDirectory, true);
         }
 
-        var mainPaks = GetMainModPaks();
-        foreach (var pak in mainPaks)
+        foreach (var pak in MainMod!.paks)
         {
-            Pack(imports, pak);
+            Pack(imports, pak, newModName);
         }
     }
 
-    private void Pack(IEnumerable<string> imports, PakInfo targetPak)
+    private void Pack(IEnumerable<string> imports, PakInfo targetPak, string newModName)
     {
-        var newModName = "MyMod";
-        var directory = Path.Combine(config.ExtractDirectory, targetPak.networkType.ToString());
+        var directory = Path.Combine(config.ExtractDirectory, targetPak.NetworkType.ToString());
         var uassetDependencies = AssetHelper.SearchDependencies(imports, directory);
-        var filesToPack = GetFilesToPack(targetPak, uassetDependencies);
+        // var filesToPack = GetFilesToPack(targetPak, uassetDependencies);
 
         // copy files from extract directory to temp directory
-        foreach (var file in filesToPack)
+        foreach (var sourceUasset in uassetDependencies)
         {
-            // remove first directory (mod name) from relative path
-            // needed to merge files from different mods
-            var relativePath = Path.GetRelativePath(directory, file);
-            var destRelativePath = string.Join("\\", relativePath.Split(Path.DirectorySeparatorChar).Skip(1));
+            if (!File.Exists(sourceUasset)) continue;
 
-            // copy file
-            string destFileName = Path.Combine(config.TempDirectory, targetPak.networkType.ToString(), destRelativePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(destFileName));
+            var relativePath = Path.GetRelativePath(directory, sourceUasset);
 
+            var parts = relativePath.Split(Path.DirectorySeparatorChar).ToList();
+            var dependencyModName = parts[0];
 
-            // File.Copy(file, destFileName);
+            // remove <modname>/Content
+            parts.RemoveRange(0, 2);
 
-            if (Path.GetExtension(file) == ".uasset")
+            // if dependency mod is not the main mod
+            // change <path>
+            // to     __IMPORTS__/<modname>/<path>
+            if (dependencyModName != MainMod!.modName)
             {
-                string[] additionalPackages = paks.Select(x => x.modName).Distinct().Where(x => x != targetPak.modName).ToArray();
-                AssetHelper.ChangeImports(file, destFileName, targetPak.modName, additionalPackages, newModName);
+                parts.InsertRange(0, ["__IMPORTS__", dependencyModName]);
             }
+
+            // all assets should be in Content
+            parts.Insert(0, "Content");
+
+            // get new abs path
+            var newPathRelative = string.Join(Path.DirectorySeparatorChar, parts);
+            string destUasset = Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), newPathRelative);
+
+            // change imports and save
+            var additionalMods = Mods.Where(m => m != MainMod).Select(m => m.modName).ToArray();
+            AssetHelper.ChangeImportsAndSave(sourceUasset, destUasset, MainMod!.modName, additionalMods, newModName);
         }
 
+        CreatePak(targetPak, newModName);
+    }
+
+    private void CreatePak(PakInfo targetPak, string newModName)
+    {
         // create dummy AssetRegistry.bin in temp directory
-        File.Create(Path.Combine(config.TempDirectory, targetPak.networkType.ToString(), "AssetRegistry.bin"));
+        File.Create(Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), "AssetRegistry.bin"));
 
         // create ResponseFile
         // TODO: check for packing without asset registry, just from Content/*
         string responseFilePath = Path.Combine(config.TempDirectory, "ResponseFile.txt");
-        string responseFileContent = $"\"{Path.Combine(config.TempDirectory, targetPak.networkType.ToString(), "*.*")}\" \"../../../Mordhau/Mods/{newModName}/*.*\" -compress";
+        string responseFileContent = $"\"{Path.Combine(config.TempDirectory, targetPak.NetworkType.ToString(), "*.*")}\" \"../../../Mordhau/Mods/{newModName}/*.*\" -compress";
         File.WriteAllText(responseFilePath, responseFileContent);
 
         // build command for execution
         // var pakPath = Path.Combine(config.PackedDirectory, targetPak.pakName) + ".pak";
-        // FIXME
-        var pakPath = Path.Combine(config.PackedDirectory, newModName + "Windows" + targetPak.networkType.ToString()) + ".pak";
+        // FIXME: use better pak path
+        var pakPath = Path.Combine(config.PackedDirectory, newModName + "Windows" + targetPak.NetworkType.ToString()) + ".pak";
         string command = $"\"{config.UnrealPak}\" \"{pakPath}\" \"-Create={responseFilePath}\"";
 
         // run process and wait for it to complete
@@ -135,7 +162,7 @@ public class Repacker(Config config) : IRepacker
             try
             {
                 PakInfo pakInfo = new PakInfo(file);
-                if (pakInfo.modName == targetPak.modName)
+                if (pakInfo.ModName == targetPak.ModName)
                 {
                     foundPaks.Add(pakInfo);
                 }
@@ -157,10 +184,10 @@ public class Repacker(Config config) : IRepacker
         // extract
         foreach (var pakInfo in Paks)
         {
-            string extractPath = Path.Combine(config.ExtractDirectory, pakInfo.networkType.ToString(), pakInfo.modName);
+            string extractPath = Path.Combine(config.ExtractDirectory, pakInfo.NetworkType.ToString(), pakInfo.ModName);
             Directory.CreateDirectory(extractPath);
 
-            string command = $"\"{config.UnrealPak}\" \"{pakInfo.path}\" -Extract \"{extractPath}\"";
+            string command = $"\"{config.UnrealPak}\" \"{pakInfo.Path}\" -Extract \"{extractPath}\"";
             var process = Process.Start(command);
             process.WaitForExit();
         }
@@ -168,8 +195,9 @@ public class Repacker(Config config) : IRepacker
 
     public void Clean()
     {
+        throw new NotImplementedException();
         // remove extracted paks, clean Paks
-        Directory.Delete(config.ExtractDirectory, true);
-        paks = [];
+        // Directory.Delete(config.ExtractDirectory, true);
+        // Paks.Clear();
     }
 }

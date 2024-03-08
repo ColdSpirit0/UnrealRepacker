@@ -2,27 +2,28 @@ using System.Text.RegularExpressions;
 
 namespace UnrealRepacker;
 
-public struct PakInfo
+public class PakInfo
 {
-    public string path;
-    public string pakName;
-    public string modName;
-    public PakNetworkType networkType;
-    public PakOsType pakOsType;
+    public string Path { get; private set; }
+    public string PakName { get; private set; }
+    public string ModName { get; private set; }
+    public PakNetworkType NetworkType { get; private set; }
+    public PakOsType PakOsType { get; private set; }
+
 
     public PakInfo(string path)
     {
-        this.path = path;
-        pakName = Path.GetFileNameWithoutExtension(path);
+        Path = path;
+        PakName = System.IO.Path.GetFileNameWithoutExtension(path);
 
-        string pattern = $@".+\{Path.DirectorySeparatorChar}(.+?)(Linux|Windows)(Server|Client)\.pak";
+        string pattern = $@".+\{System.IO.Path.DirectorySeparatorChar}(.+?)(Linux|Windows)(Server|Client)\.pak";
         Match match = Regex.Match(path, pattern);
 
         if (match.Success)
         {
-            modName = match.Groups[1].Value;
-            pakOsType = Enum.Parse<PakOsType>(match.Groups[2].Value);
-            networkType = Enum.Parse<PakNetworkType>(match.Groups[3].Value);
+            ModName = match.Groups[1].Value;
+            PakOsType = Enum.Parse<PakOsType>(match.Groups[2].Value);
+            NetworkType = Enum.Parse<PakNetworkType>(match.Groups[3].Value);
             return;
         }
 

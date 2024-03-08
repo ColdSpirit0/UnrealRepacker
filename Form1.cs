@@ -9,9 +9,7 @@ public partial class Form1 : Form
 {
     Config config;
     // PakTool pakTool;
-    IRepacker repacker;
-
-    List<ModInfo> modInfos = new();
+    Repacker repacker;
 
     public Form1()
     {
@@ -51,20 +49,32 @@ public partial class Form1 : Form
                 repacker.AddPak(pak);
             }
             UpdatePaksList();
+            UpdateModData();
         }
+    }
+
+    private void UpdateModData()
+    {
+        comboBox1.Items.Clear();
+        foreach (var mod in repacker.Mods)
+        {
+            comboBox1.Items.Add(mod);
+        }
+
+        comboBox1.SelectedItem = repacker.MainMod;
+        newModNameTextBox.Text = repacker.MainMod!.modName;
     }
 
     private void UpdatePaksList()
     {
-        var modGroups = repacker.Paks.GroupBy(x => x.modName);
         treeView1.Nodes.Clear();
 
-        foreach (var modGroup in modGroups)
+        foreach (var mod in repacker.Mods)
         {
-            TreeNode modNode = new TreeNode(modGroup.Key);
-            foreach (var pak in modGroup)
+            TreeNode modNode = new TreeNode(mod.modName);
+            foreach (var pak in mod.paks)
             {
-                modNode.Nodes.Add(new TreeNode($"{pak.pakName}, {pak.networkType}, {pak.pakOsType}"));
+                modNode.Nodes.Add(new TreeNode($"{pak.PakName}, {pak.NetworkType}, {pak.PakOsType}"));
             }
             treeView1.Nodes.Add(modNode);
         }
@@ -81,7 +91,7 @@ public partial class Form1 : Form
             return;
         }
 
-        repacker.Pack(uassetsListBox.SelectedItems.Cast<string>());
+        repacker.Pack(uassetsListBox.SelectedItems.Cast<string>(), newModNameTextBox.Text);
 
         // foreach (var modInfo in modInfos)
         // {
@@ -92,7 +102,7 @@ public partial class Form1 : Form
     private void OnExtractPaksButtonClick(object sender, EventArgs e)
     {
         repacker.ExtractAllPaks();
-        foreach (var import in repacker.GetImports())
+        foreach (var import in repacker.GetMainModImports())
         {
             uassetsListBox.Items.Add(import);
         }
