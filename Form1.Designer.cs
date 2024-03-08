@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
             label1 = new Label();
             label2 = new Label();
             uassetsListBox = new ListBox();
@@ -37,28 +36,18 @@
             extractPaksButton = new Button();
             tabControl1 = new TabControl();
             addPaksTab = new TabPage();
-            comboBox1 = new ComboBox();
+            button1 = new Button();
+            cleanButton = new Button();
             label4 = new Label();
+            comboBox1 = new ComboBox();
             assetsTab = new TabPage();
             openDirectoryCheckBox = new CheckBox();
             newModNameTextBox = new TextBox();
             label3 = new Label();
-            cleanButton = new Button();
             tabControl1.SuspendLayout();
             addPaksTab.SuspendLayout();
             assetsTab.SuspendLayout();
             SuspendLayout();
-            // 
-            // button1
-            // 
-            button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            button1.Location = new Point(845, 21);
-            button1.Name = "button1";
-            button1.Size = new Size(186, 23);
-            button1.TabIndex = 0;
-            button1.Text = "Add paks";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += OnAddPakButtonClick;
             // 
             // label1
             // 
@@ -132,12 +121,12 @@
             // 
             // addPaksTab
             // 
+            addPaksTab.Controls.Add(button1);
             addPaksTab.Controls.Add(cleanButton);
-            addPaksTab.Controls.Add(comboBox1);
             addPaksTab.Controls.Add(label4);
             addPaksTab.Controls.Add(label1);
+            addPaksTab.Controls.Add(comboBox1);
             addPaksTab.Controls.Add(treeView1);
-            addPaksTab.Controls.Add(button1);
             addPaksTab.Location = new Point(4, 24);
             addPaksTab.Name = "addPaksTab";
             addPaksTab.Padding = new Padding(3);
@@ -146,24 +135,48 @@
             addPaksTab.Text = "Add Paks";
             addPaksTab.UseVisualStyleBackColor = true;
             // 
-            // comboBox1
+            // button1
             // 
-            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(845, 88);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(186, 23);
-            comboBox1.TabIndex = 11;
-            comboBox1.SelectedIndexChanged += OnMainModSelecedItemhanged;
+            button1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            button1.Location = new Point(845, 21);
+            button1.Name = "button1";
+            button1.Size = new Size(186, 23);
+            button1.TabIndex = 0;
+            button1.Text = "Add paks";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += OnAddPakButtonClick;
+            // 
+            // cleanButton
+            // 
+            cleanButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            cleanButton.Location = new Point(845, 483);
+            cleanButton.Name = "cleanButton";
+            cleanButton.Size = new Size(186, 23);
+            cleanButton.TabIndex = 12;
+            cleanButton.Text = "Reset changes";
+            cleanButton.UseVisualStyleBackColor = true;
+            cleanButton.Click += OnResetChangesClick;
             // 
             // label4
             // 
+            label4.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             label4.AutoSize = true;
-            label4.Location = new Point(845, 70);
+            label4.Location = new Point(845, 84);
             label4.Name = "label4";
             label4.Size = new Size(62, 15);
             label4.TabIndex = 10;
             label4.Text = "Main mod";
+            // 
+            // comboBox1
+            // 
+            comboBox1.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(845, 102);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(186, 23);
+            comboBox1.TabIndex = 11;
+            comboBox1.SelectedIndexChanged += OnMainModSelecedItemhanged;
             // 
             // assetsTab
             // 
@@ -184,6 +197,7 @@
             // 
             // openDirectoryCheckBox
             // 
+            openDirectoryCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             openDirectoryCheckBox.AutoSize = true;
             openDirectoryCheckBox.Checked = true;
             openDirectoryCheckBox.CheckState = CheckState.Checked;
@@ -196,6 +210,7 @@
             // 
             // newModNameTextBox
             // 
+            newModNameTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             newModNameTextBox.Location = new Point(849, 407);
             newModNameTextBox.Name = "newModNameTextBox";
             newModNameTextBox.Size = new Size(182, 23);
@@ -203,22 +218,13 @@
             // 
             // label3
             // 
+            label3.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             label3.AutoSize = true;
             label3.Location = new Point(849, 389);
             label3.Name = "label3";
             label3.Size = new Size(92, 15);
             label3.TabIndex = 11;
             label3.Text = "New mod name";
-            // 
-            // cleanButton
-            // 
-            cleanButton.Location = new Point(845, 483);
-            cleanButton.Name = "cleanButton";
-            cleanButton.Size = new Size(186, 23);
-            cleanButton.TabIndex = 12;
-            cleanButton.Text = "Reset changes";
-            cleanButton.UseVisualStyleBackColor = true;
-            cleanButton.Click += OnResetChangesClick;
             // 
             // Form1
             // 
@@ -227,7 +233,7 @@
             ClientSize = new Size(1069, 564);
             Controls.Add(tabControl1);
             Name = "Form1";
-            Text = "Form1";
+            Text = "Unreal Repacker";
             Shown += Form1_Shown;
             tabControl1.ResumeLayout(false);
             addPaksTab.ResumeLayout(false);
@@ -238,7 +244,6 @@
         }
 
         #endregion
-        private Button button1;
         private Label label1;
         private Label label2;
         private Label label3;
@@ -251,9 +256,10 @@
         private TabPage addPaksTab;
         private TabPage tabPage1;
         private TabPage assetsTab;
-        private ComboBox comboBox1;
-        private Label label4;
         private CheckBox openDirectoryCheckBox;
+        private Button button1;
         private Button cleanButton;
+        private Label label4;
+        private ComboBox comboBox1;
     }
 }
