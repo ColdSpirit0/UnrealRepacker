@@ -11,7 +11,3 @@ To use this tool you need to have [.NET 8](https://dotnet.microsoft.com/download
 1. Download the latest release from the [releases page](https://github.com/ColdSpirit0/UnrealRepacker/releases).
 2. Extract the zip file to a directory of your choice.
 3. Run `UnrealRepacker.exe`.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
